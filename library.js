@@ -1,6 +1,6 @@
 const {Builder, By, until} = require('selenium-webdriver');
 const fs = require('fs');
-
+const path = require('path');
 
 function getNewestFile(dir, regexp) {
     newest = null
@@ -28,6 +28,35 @@ function getNewestFile(dir, regexp) {
     return null
 }
 
+function getLatestFile(dirpath) {
+
+    // Check if dirpath exist or not right here
+  
+    let latest;
+  
+    const files = fs.readdirSync(dirpath);
+    files.forEach(filename => {
+      // Get the stat
+      const stat = fs.lstatSync(path.join(dirpath, filename));
+      // Pass if it is a directory
+      if (stat.isDirectory())
+        return;
+  
+      // latest default to first file
+      if (!latest) {
+        latest = {filename, mtime: stat.mtime};
+        return;
+      }
+      // update latest if mtime is greater than the current latest
+      if (stat.mtime > latest.mtime) {
+        latest.filename = filename;
+        latest.mtime = stat.mtime;
+      }
+    });
+  
+    return dirpath + latest.filename;
+  }
+
 (async function example() {
     const driver = await new Builder().forBrowser('chrome').build();
 
@@ -51,7 +80,7 @@ function getNewestFile(dir, regexp) {
 
 
         setTimeout(function(){
-            let downloaded_file = getNewestFile("C:\\Users\\Murad\\Downloads\\", new RegExp('.*\.csv'));
+            let downloaded_file = getLatestFile("C:\\Users\\Murad\\Downloads\\");
             fs.rename(downloaded_file, "C:\\Users\\Murad\\Downloads\\newfile.csv", function(err){
                 if ( err ) console.log('ERROR: ' + err);
             })
