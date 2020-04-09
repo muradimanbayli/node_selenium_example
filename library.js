@@ -43,16 +43,21 @@ function getNewestFile(dir, regexp) {
         await driver.wait(until.elementLocated(By.id('org_filter')), 5 * 1000).then(el => {
             driver.executeScript("document.getElementById('after_filter').setAttribute('value', '03/03/2020')");
             driver.executeScript("document.getElementById('before_filter').setAttribute('value', '03/03/2020')"); 
-            driver.executeScript('document.querySelector("#org_filter > option:nth-child(92)").selected=true');
+            driver.executeScript('$("#org_filter").val("4")');
             driver.executeScript('load_report();'); 
         });
 
         await driver.executeScript('download_report_transfer();');
 
-        let downloaded_file = await getNewestFile("C:\\Users\\Murad\\Downloads\\", new RegExp('.*\.csv'));
-        await fs.rename(downloaded_file, "C:\\Users\\Murad\\Downloads\\newfile.csv", function(err){
-            if ( err ) console.log('ERROR: ' + err);
-        }) 
+
+        setTimeout(function(){
+            let downloaded_file = getNewestFile("C:\\Users\\Murad\\Downloads\\", new RegExp('.*\.csv'));
+            fs.rename(downloaded_file, "C:\\Users\\Murad\\Downloads\\newfile.csv", function(err){
+                if ( err ) console.log('ERROR: ' + err);
+            })
+        }, 10*1000);
+
+         
 
         await driver.wait(until.titleIs('nehalist.io'));
     } finally {
