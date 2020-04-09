@@ -1,4 +1,32 @@
 const {Builder, By, until} = require('selenium-webdriver');
+const fs = require('fs');
+
+
+function getNewestFile(dir, regexp) {
+    newest = null
+    files = fs.readdirSync(dir)
+    one_matched = 0
+
+    for (i = 0; i < files.length; i++) {
+
+        if (regexp.test(files[i]) == false)
+            continue
+        else if (one_matched == 0) {
+            newest = files[i]
+            one_matched = 1
+            continue
+        }
+
+        f1_time = fs.statSync(files[i]).mtime.getTime()
+        f2_time = fs.statSync(newest).mtime.getTime()
+        if (f1_time > f2_time)
+            newest[i] = files[i]  
+    }
+
+    if (newest != null)
+        return (dir + newest)
+    return null
+}
 
 (async function example() {
     const driver = await new Builder().forBrowser('chrome').build();
@@ -19,11 +47,17 @@ const {Builder, By, until} = require('selenium-webdriver');
             driver.executeScript('load_report();'); 
         });
 
-        driver.executeScript('download_report_transfer();');
+        await driver.executeScript('download_report_transfer();');
+
+        let downloaded_file = await getNewestFile("C:\\Users\\Murad\\Downloads\\", new RegExp('.*\.csv'));
+        await fs.rename(downloaded_file, "C:\\Users\\Murad\\Downloads\\newfile.csv", function(err){
+            if ( err ) console.log('ERROR: ' + err);
+        }) 
 
         await driver.wait(until.titleIs('nehalist.io'));
     } finally {
         //await driver.quit();
     }
 })();
+
 
